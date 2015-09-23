@@ -1,9 +1,14 @@
+// Package xml emplements an element type that can be used to ummarshal
+// arbitrary xml, dealing with it in the form of a tree. This can often be
+// easier than defining specialized types that implement UnmarshalXML
+// directly.
 package xml
 
 import (
 	stdxml "encoding/xml"
 )
 
+// An xml element
 type Element struct {
 	Name     stdxml.Name
 	Attrs    map[stdxml.Name]string
