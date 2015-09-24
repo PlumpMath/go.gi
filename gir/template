@@ -1,0 +1,7 @@
+package {{ ToLower .Namespace.Name }}
+{{ if not (eq .PackageName "") }}
+// #cgo CFLAGS: `pkg-config --cflags {{ .PackageName }}`
+// #cgo LDFLAGS: `pkg-config --libs {{ .PackageName }}`
+{{ end }}
+import "C"
+{{/* vim: set ft=go : */}}
