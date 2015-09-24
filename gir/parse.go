@@ -23,6 +23,10 @@ func NewParser(logWriter io.Writer) *Parser {
 	}
 }
 
+func (p *Parser) unrecognized(e *myxml.Element) {
+	p.Logger.Println("WARNING: Unrecognized Child Element ", e.Name)
+}
+
 func (p *Parser) ParseRepository(e *myxml.Element) (repo *Repository, err error) {
 	defer func() { err, _ = recover().(error) }()
 	requireTag(e, xml.Name{CORE_URI, "repository"})
@@ -60,27 +64,41 @@ func (p *Parser) ParseRepository(e *myxml.Element) (repo *Repository, err error)
 				}
 				repo.PackageName = pkg
 			default:
-				p.Logger.Println("WARNING: Unrecognized Child Element ", elt.Name)
+				p.unrecognized(elt)
 			}
 		}
 	}
 	return
 }
 
-func (p *Parser) ParseNamespace(elt *myxml.Element) (ns *Namespace, err error) {
+func (p *Parser) ParseNamespace(e *myxml.Element) (ns *Namespace, err error) {
 	defer func() { err, _ = recover().(error) }()
 	split := func(s string) []string {
 		return strings.Split(s, ",")
 	}
 	attr := func(name xml.Name) string {
-		return requireAttr(elt.Attrs, name)
+		return requireAttr(e.Attrs, name)
 	}
-	requireTag(elt, xml.Name{CORE_URI, "namespace"})
+	requireTag(e, xml.Name{CORE_URI, "namespace"})
 	ns = &Namespace{
 		Name:                attr(xml.Name{"", "name"}),
 		SharedLibraries:     split(attr(xml.Name{"", "shared-library"})),
 		CIdentifierPrefixes: split(attr(xml.Name{C_URI, "identifier-prefixes"})),
 		CSymbolPrefixes:     split(attr(xml.Name{C_URI, "symbol-prefixes"})),
+		Functions: []*Function{},
+	}
+	for _, child := range(e.Children) {
+		switch elt := child.(type) {
+		case *myxml.Element:
+			switch elt.Name {
+			case xml.Name{CORE_URI, "function"}:
+				fn, err := p.ParseFunction(elt)
+				check(err)
+				ns.Functions = append(ns.Functions, fn)
+			default:
+				p.unrecognized(elt)
+			}
+		}
 	}
 	return
 }
@@ -105,6 +123,22 @@ func (p *Parser) ParsePackage(elt *myxml.Element) (pkg string, err error) {
 	pkg, ok := elt.Attrs[xml.Name{"", "name"}]
 	if !ok {
 		panic(errors.New("<package> element has no name attribute."))
+	}
+	return
+}
+
+func (p *Parser) ParseFunction(e *myxml.Element) (fn *Function, err error) {
+	defer func() { err, _ = recover().(error) }()
+	attr := func(name xml.Name) string {
+		return requireAttr(e.Attrs, name)
+	}
+	fn = &Function{
+		Name: attr(xml.Name{"", "name"}),
+		CIdentifier: attr(xml.Name{C_URI, "identifier"}),
+
+		// TODO: parse these out of the xml:
+		Doc: "",
+		ReturnValue: nil,
 	}
 	return
 }
