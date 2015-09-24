@@ -1,8 +1,8 @@
 package main
 
 import (
-	".."
-	myxml "../../xml"
+	"zenhack.net/go/gi/gir"
+	myxml "zenhack.net/go/gi/xml"
 	"encoding/xml"
 	"fmt"
 	"os"

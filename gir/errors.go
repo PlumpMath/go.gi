@@ -1,7 +1,7 @@
 package gir
 
 import (
-	myxml "../xml"
+	myxml "zenhack.net/go/gi/xml"
 	"bytes"
 	"encoding/xml"
 	"errors"

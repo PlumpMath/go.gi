@@ -2,7 +2,7 @@
 // arbitrary xml, dealing with it in the form of a tree. This can often be
 // easier than defining specialized types that implement UnmarshalXML
 // directly.
-package xml
+package xml // import "zenhack.net/go/gi/xml"
 
 import (
 	stdxml "encoding/xml"
